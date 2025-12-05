@@ -17,24 +17,24 @@ function buildForm(forms, fileForms) {
     return form
 }
 
-async function getFormHeaders (form, authorization) {
+async function getFormHeaders (form) {
   const getLen = promisify(form.getLength).bind(form);
   const len = await getLen();
   return {
     ...form.getHeaders(),
     'Content-Length': len,
-	"Authorization": "Bearer " + authorization
   }
 }
 
-async function uploadFile(url, forms, fileForms, authorization) {
-    console.log(url);
-    console.log(forms);
-    console.log(fileForms);
+async function uploadFile(url, forms, fileForms, bearerAuthorization) {
     const form = buildForm(forms, fileForms);
-    const headers = await getFormHeaders(form, authorization);
-    console.log(headers);
-    return axios.post(url, form, {headers: headers,maxContentLength: Infinity})
+    const headers = await getFormHeaders(form);
+    if (bearerAuthorization) {
+      headers['Authorization'] = `Bearer ${bearerAuthorization}`;
+    }
+
+    console.log("Uploading file to " + url + " with headers: " + JSON.stringify(headers) + " and form: " + JSON.stringify(form));
+    return axios.post(url, form, {headers: headers, maxContentLength: Infinity, maxBodyLength: Infinity,})
 }
 
 
